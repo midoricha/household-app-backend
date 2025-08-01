@@ -2,13 +2,13 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface IPantryItem extends Document {
   name: string;
-  quantity: number;
+  quantity?: number;
   unit?: string;
 }
 
 const pantryItemSchema = new Schema({
   name: { type: String, required: true },
-  quantity: { type: Number, required: true },
+  quantity: { type: Number },
   unit: { type: String },
 });
 
