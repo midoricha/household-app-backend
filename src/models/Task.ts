@@ -5,9 +5,10 @@ export interface ITask extends Document {
   completed: boolean;
   completedBy?: string; // TODO: user
   dueDate?: Date;
-  recurring?: 'daily' | 'weekly' | 'monthly';
+  recurring?: 'never' | 'daily' | 'weekly' | 'monthly' | 'weekdays' | 'weekends' | 'biweekly' | 'yearly';
   notes?: string;
   priority: 'none' | 'low' | 'medium' | 'high';
+  isArchived: boolean;
 }
 
 const taskSchema = new Schema({
@@ -15,9 +16,10 @@ const taskSchema = new Schema({
   completed: { type: Boolean, default: false },
   completedBy: { type: String },
   dueDate: { type: Date },
-  recurring: { type: String, enum: ['daily', 'weekly', 'monthly'] },
+  recurring: { type: String, enum: ['never', 'daily', 'weekly', 'monthly', 'weekdays', 'weekends', 'biweekly', 'yearly'], default: 'never' },
   notes: { type: String },
-  priority: { type: String, enum: ['none', 'low', 'medium', 'high'] },
+  priority: { type: String, enum: ['none', 'low', 'medium', 'high'], default: 'none' },
+  isArchived: { type: Boolean, default: false },
 });
 
 export default model<ITask>('Task', taskSchema);
