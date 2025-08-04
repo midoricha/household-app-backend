@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import MealPlanEntry from '../models/MealPlanEntry';
 import Recipe from '../models/Recipe';
 import PantryItem from '../models/PantryItem';
+import Fuse from 'fuse.js';
 
 export const getMealPlan = async (req: Request, res: Response) => {
   const { startDate, endDate } = req.query;
@@ -29,11 +30,24 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
     }
 
     const pantryItems = await PantryItem.find();
-    const pantryItemNames = pantryItems.map(item => item.name.toLowerCase());
+    const fuse = new Fuse(pantryItems, { keys: ['name'], includeScore: true, threshold: 0.4 });
 
-    const missingIngredients = recipe.ingredients.filter(ingredient => {
-      return !pantryItemNames.includes(ingredient.name.toLowerCase());
-    });
+    const missing: any[] = [];
+    const needsConfirmation: any[] = [];
+
+    for (const ingredient of recipe.ingredients) {
+      const result = fuse.search(ingredient.name);
+      if (result.length === 0) {
+        missing.push(ingredient);
+      } else if (result[0].score === 0) {
+        // Exact match, do nothing
+      } else {
+        needsConfirmation.push({
+          ingredient: ingredient,
+          potentialMatches: result.map(r => r.item),
+        });
+      }
+    }
 
     const newMealPlanEntry = new MealPlanEntry({
       date,
@@ -45,7 +59,8 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
 
     res.status(201).json({
       mealPlanEntry: newMealPlanEntry,
-      missingIngredients,
+      missing,
+      needsConfirmation,
     });
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });

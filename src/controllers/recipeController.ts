@@ -64,12 +64,15 @@ export const addMissingIngredientsToGroceryList = async (req: Request, res: Resp
     });
 
     for (const ingredient of missingIngredients) {
-      const groceryListItem = new GroceryListItem({
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-      });
-      await groceryListItem.save();
+      const existingItem = await GroceryListItem.findOne({ name: ingredient.name });
+      if (!existingItem) {
+        const groceryListItem = new GroceryListItem({
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+        });
+        await groceryListItem.save();
+      }
     }
 
     res.json({ message: 'Missing ingredients added to grocery list' });
