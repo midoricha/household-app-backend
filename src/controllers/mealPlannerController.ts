@@ -1,26 +1,61 @@
 import { Request, Response } from 'express';
+import MealPlanEntry from '../models/MealPlanEntry';
 import Recipe from '../models/Recipe';
 import PantryItem from '../models/PantryItem';
 
-export const getMealSuggestions = async (req: Request, res: Response) => {
+export const getMealPlan = async (req: Request, res: Response) => {
+  const { startDate, endDate } = req.query;
+
   try {
+    const mealPlan = await MealPlanEntry.find({
+      date: {
+        $gte: new Date(startDate as string),
+        $lte: new Date(endDate as string),
+      },
+    }).populate('recipeId');
+    res.json(mealPlan);
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+export const addRecipeToMealPlan = async (req: Request, res: Response) => {
+  const { date, recipeId, mealType } = req.body;
+
+  try {
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      return res.status(404).json({ message: 'Recipe not found' });
+    }
+
     const pantryItems = await PantryItem.find();
     const pantryItemNames = pantryItems.map(item => item.name.toLowerCase());
 
-    const allRecipes = await Recipe.find();
-    
-    const suggestions = allRecipes.filter(recipe => {
-      // For each recipe, check if any of its ingredients can be matched with the pantry items
-      return recipe.ingredients.some(ingredient => {
-        const ingredientName = ingredient.name.toLowerCase();
-        // Check if any pantry item name is a substring of the ingredient, or vice-versa
-        return pantryItemNames.some(pantryItemName => {
-          return ingredientName.includes(pantryItemName) || pantryItemName.includes(ingredientName);
-        });
-      });
+    const missingIngredients = recipe.ingredients.filter(ingredient => {
+      return !pantryItemNames.includes(ingredient.name.toLowerCase());
     });
 
-    res.json(suggestions);
+    const newMealPlanEntry = new MealPlanEntry({
+      date,
+      recipeId,
+      mealType,
+    });
+
+    await newMealPlanEntry.save();
+
+    res.status(201).json({
+      mealPlanEntry: newMealPlanEntry,
+      missingIngredients,
+    });
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+export const removeMealFromPlan = async (req: Request, res: Response) => {
+  try {
+    await MealPlanEntry.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Meal plan entry deleted' });
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });
   }

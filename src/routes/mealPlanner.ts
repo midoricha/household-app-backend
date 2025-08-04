@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { getMealSuggestions } from '../controllers/mealPlannerController';
+import { getMealPlan, addRecipeToMealPlan, removeMealFromPlan } from '../controllers/mealPlannerController';
 
 const router = Router();
 
-router.get('/suggestions', getMealSuggestions);
+router.get('/', getMealPlan);
+router.post('/', addRecipeToMealPlan);
+router.delete('/:id', removeMealFromPlan);
 
 export default router;

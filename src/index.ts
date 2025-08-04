@@ -6,6 +6,7 @@ import taskRoutes from './routes/tasks';
 import recipeRoutes from './routes/recipes';
 import pantryRoutes from './routes/pantry';
 import mealPlannerRoutes from './routes/mealPlanner';
+import groceryListRoutes from './routes/groceryList';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/pantry', pantryRoutes);
 app.use('/api/meal-planner', mealPlannerRoutes);
+app.use('/api/grocery-list', groceryListRoutes);
 
 const MONGO_URI = process.env.MONGO_URI;
 
