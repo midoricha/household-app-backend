@@ -64,3 +64,23 @@ export const moveCheckedItemsToPantry = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message });
     }
 };
+
+export const batchAddGroceryListItems = async (req: Request, res: Response) => {
+    const { items } = req.body as { items: IGroceryListItem[] };
+
+    try {
+        for (const item of items) {
+            const existingItem = await GroceryListItem.findOne({
+                name: { $regex: new RegExp(`^${item.name}$`, 'i') }
+            });
+
+            if (!existingItem) {
+                const newItem = new GroceryListItem(item);
+                await newItem.save();
+            }
+        }
+        res.status(201).json({ message: 'Batch add successful' });
+    } catch (error) {
+        res.status(400).json({ message: (error as Error).message });
+    }
+};

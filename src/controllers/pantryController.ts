@@ -1,5 +1,48 @@
 import { Request, Response } from 'express';
-import PantryItem from '../models/PantryItem';
+import PantryItem, { IPantryItem } from '../models/PantryItem';
+import { IIngredient } from '../models/Recipe';
+
+interface ICheckIngredientsRequest {
+  ingredients: IIngredient[];
+};
+
+export const checkIngredients = async (req: Request, res: Response) => {
+  const { ingredients } = req.body as ICheckIngredientsRequest;
+
+  try {
+    const pantryItems = await PantryItem.find();
+    const pantryItemNames = pantryItems.map(item => item.name.toLowerCase());
+
+    const available: IPantryItem[] = [];
+    const missing: IIngredient[] = [];
+    const needsConfirmation: { ingredient: IIngredient, potentialMatches: IPantryItem[] }[] = [];
+
+    for (const ingredient of ingredients) {
+      const lowerCaseIngredientName = ingredient.name.toLowerCase();
+      const exactMatch = pantryItems.find(pantryItem => pantryItem.name.toLowerCase() === lowerCaseIngredientName);
+
+      if (exactMatch) {
+        available.push(exactMatch);
+      } else {
+        const potentialMatches = pantryItems.filter(pantryItem =>
+          pantryItem.name.toLowerCase().includes(lowerCaseIngredientName) ||
+          lowerCaseIngredientName.includes(pantryItem.name.toLowerCase())
+        );
+
+        if (potentialMatches.length > 0) {
+          needsConfirmation.push({ ingredient, potentialMatches });
+        } else {
+          missing.push(ingredient);
+        }
+      }
+    }
+
+    res.json({ available, missing, needsConfirmation });
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+
 
 export const getPantryItems = async (req: Request, res: Response) => {
   try {

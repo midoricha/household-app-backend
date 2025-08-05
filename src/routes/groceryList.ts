@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getGroceryListItems, createGroceryListItem, updateGroceryListItem, deleteGroceryListItem, moveCheckedItemsToPantry } from '../controllers/groceryListController';
+import { getGroceryListItems, createGroceryListItem, updateGroceryListItem, deleteGroceryListItem, moveCheckedItemsToPantry, batchAddGroceryListItems } from '../controllers/groceryListController';
 
 const router = Router();
 
@@ -8,5 +8,6 @@ router.post('/', createGroceryListItem);
 router.put('/:id', updateGroceryListItem);
 router.delete('/:id', deleteGroceryListItem);
 router.post('/move-to-pantry', moveCheckedItemsToPantry);
+router.post('/batch-add', batchAddGroceryListItems);
 
 export default router;

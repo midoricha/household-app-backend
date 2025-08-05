@@ -5,6 +5,7 @@ export interface IGroceryListItem extends Document {
     quantity?: number;
     unit?: string;
     isChecked: boolean;
+    category?: string;
 }
 
 const groceryListItemSchema = new Schema({
@@ -12,6 +13,7 @@ const groceryListItemSchema = new Schema({
     quantity: { type: Number },
     unit: { type: String },
     isChecked: { type: Boolean, default: false },
+    category: { type: String }
 });
 
 export default model<IGroceryListItem>('GroceryListItem', groceryListItemSchema);

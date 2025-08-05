@@ -64,7 +64,10 @@ export const addMissingIngredientsToGroceryList = async (req: Request, res: Resp
     });
 
     for (const ingredient of missingIngredients) {
-      const existingItem = await GroceryListItem.findOne({ name: ingredient.name });
+      const existingItem = await GroceryListItem.findOne({
+        name: { $regex: new RegExp(`^${ingredient.name}$`, 'i') }
+      });
+
       if (!existingItem) {
         const groceryListItem = new GroceryListItem({
           name: ingredient.name,

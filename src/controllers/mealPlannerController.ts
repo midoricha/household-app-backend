@@ -5,14 +5,11 @@ import PantryItem from '../models/PantryItem';
 import Fuse from 'fuse.js';
 
 export const getMealPlan = async (req: Request, res: Response) => {
-  const { startDate, endDate } = req.query;
+  const { date } = req.query;
 
   try {
     const mealPlan = await MealPlanEntry.find({
-      date: {
-        $gte: new Date(startDate as string),
-        $lte: new Date(endDate as string),
-      },
+      date: date,
     }).populate('recipeId');
     res.json(mealPlan);
   } catch (error) {
@@ -30,7 +27,7 @@ export const addRecipeToMealPlan = async (req: Request, res: Response) => {
     }
 
     const pantryItems = await PantryItem.find();
-    const fuse = new Fuse(pantryItems, { keys: ['name'], includeScore: true, threshold: 0.4 });
+    const fuse = new Fuse(pantryItems, { keys: ['name'], includeScore: true, threshold: 0.6 });
 
     const missing: any[] = [];
     const needsConfirmation: any[] = [];
